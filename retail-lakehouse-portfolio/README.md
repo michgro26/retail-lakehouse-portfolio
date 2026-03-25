@@ -1,147 +1,85 @@
 # Retail Lakehouse Portfolio
 
-Gotowy, rozbudowany projekt portfolio pod role:
-- Big Data / Data Engineer
-- Hurtownia danych / Analytics Engineer
-- ML / AI Engineer
+To jest mój projekt portfolio, który przygotowałem pod role związane z:
+- Data Engineering / Big Data
+- Hurtownią danych / Analytics Engineering
+- ML / AI
 - LLM / GenAI
 
-To jest **działająca platforma end-to-end dla retail analytics**. Projekt generuje dane demo, ładuje je do warstwy bronze, buduje silver i gold, wykonuje quality checks, trenuje model forecastingu, generuje raport KPI oraz udostępnia aplikację Streamlit z warstwą analytics assistant.
+Chciałem zbudować coś, co pokazuje nie tylko sam model albo sam dashboard, ale cały przepływ danych end-to-end — od surowych danych, przez warstwy hurtowni, aż po prostą warstwę ML i aplikację do zadawania pytań o dane.
 
-## Co zostało zaimplementowane
+Projekt jest osadzony w scenariuszu retail / e-commerce i obejmuje:
+- generowanie danych demo,
+- ingestion do warstwy bronze,
+- transformacje do silver i gold,
+- quality checks,
+- forecasting sprzedaży,
+- raport KPI,
+- prostą aplikację Streamlit działającą jako analytics assistant.
 
-### 1. Data generation i ingestion
-- syntetyczne dane klientów, produktów, kampanii, zamówień i pozycji zamówień,
-- zapis do `data/raw/*.csv`,
-- ładowanie do DuckDB jako tabele bronze.
+## Cel projektu
 
-### 2. Hurtownia danych
-- warstwa **silver** z czyszczeniem i typowaniem,
-- warstwa **gold** z modelowaniem faktów i wymiarów,
-- metryki dzienne gotowe do BI i ML.
+Celem było zbudowanie spójnego projektu, który pokazuje:
+- pracę z danymi w kilku warstwach,
+- modelowanie hurtowni danych,
+- podejście do jakości danych,
+- prosty pipeline ML,
+- sposób połączenia analityki z warstwą LLM / assistant.
 
-### 3. Data quality
-- walidacja pustych tabel,
-- sprawdzanie kluczy unikalnych,
-- kontrola osieroconych rekordów w tabeli faktów,
-- kontrola nieujemnego przychodu.
+Zależało mi na tym, żeby projekt dało się uruchomić lokalnie i żeby miał sens biznesowy, a nie był tylko zbiorem luźnych skryptów.
 
-### 4. ML
-- model forecastingu dziennego revenue,
-- zapis predykcji do tabeli `sales_forecast`,
-- prosty split train/test i metryka MAE.
+## Co tutaj zrobiłem
 
-### 5. Reporting
-- automatycznie generowane wykresy PNG,
-- raport Markdown z KPI,
-- artefakty do wrzucenia na GitHub lub do portfolio.
+### 1. Generowanie i załadowanie danych
+Przygotowałem syntetyczne dane dotyczące:
+- klientów,
+- produktów,
+- kampanii marketingowych,
+- zamówień,
+- pozycji zamówień.
 
-### 6. Warstwa LLM / analytics assistant
-- aplikacja Streamlit,
-- pytania do KPI i danych,
-- lokalny mechanizm odpowiedzi oparty o dokumentację KPI i dane z hurtowni,
-- miejsce przygotowane pod integrację z OpenAI API lub lokalnym LLM.
+Dane są zapisywane do `data/raw/*.csv`, a następnie ładowane do DuckDB jako warstwa bronze.
+
+### 2. Budowa warstw silver i gold
+Na danych surowych buduję kolejne warstwy:
+- **bronze** – surowy zrzut danych,
+- **silver** – oczyszczone i ujednolicone dane,
+- **gold** – warstwa analityczna z faktami, wymiarami i metrykami.
+
+W gold przygotowałem model z tabelami typu:
+- `fact_sales`
+- `dim_customer`
+- `dim_product`
+- `dim_date`
+
+Dodatkowo powstaje tabela dziennych metryk sprzedażowych, którą można wykorzystać dalej w BI albo ML.
+
+### 3. Kontrole jakości danych
+Dodałem prostą warstwę quality checks, żeby projekt był bardziej zbliżony do realnego pipeline’u. Sprawdzane są m.in.:
+- czy tabele nie są puste,
+- czy klucze mają unikalne wartości tam, gdzie powinny,
+- czy nie ma osieroconych rekordów w tabeli faktów,
+- czy revenue nie schodzi poniżej zera.
+
+### 4. Część ML
+Na danych z warstwy gold trenuję prosty model forecastingu dziennego revenue.  
+Model zapisuje predykcje do tabeli `sales_forecast`.
+
+To nie jest projekt stricte badawczy, tylko bardziej pokazanie, jak można podpiąć model ML pod wcześniej przygotowaną hurtownię danych.
+
+### 5. Raportowanie
+Na końcu pipeline generuje:
+- wykresy PNG,
+- raport KPI w Markdown,
+- gotowe artefakty, które można pokazać w repo albo wykorzystać w portfolio.
+
+### 6. Prosty analytics assistant
+Dodałem też aplikację Streamlit, która pozwala zadawać pytania o dane i KPI.  
+Na ten moment działa to jako lekka warstwa analytics assistant oparta o lokalną logikę i definicje KPI, ale projekt jest przygotowany tak, żeby można go było łatwo rozwinąć np. o OpenAI API, RAG albo lokalny model.
+
+---
 
 ## Architektura
 
 ```text
-raw CSV -> bronze tables -> silver cleansing -> gold warehouse -> ML forecast -> KPI report -> Streamlit analytics assistant
-```
-
-## Struktura repo
-
-```text
-retail-lakehouse-portfolio/
-├── artifacts/
-│   ├── daily_revenue.png
-│   ├── revenue_by_campaign.png
-│   ├── revenue_by_category.png
-│   └── kpi_report.md
-├── data/
-│   ├── raw/
-│   └── processed/
-├── docs/
-├── sql/
-│   ├── silver/
-│   └── gold/
-├── src/retail_portfolio/
-│   ├── config.py
-│   ├── pipelines/
-│   │   ├── generate_sample_data.py
-│   │   ├── ingest_raw.py
-│   │   ├── build_warehouse.py
-│   │   └── run_all.py
-│   ├── quality/
-│   │   └── validate_warehouse.py
-│   ├── ml/
-│   │   └── train_forecast.py
-│   ├── reporting/
-│   │   └── generate_report.py
-│   └── llm/
-│       ├── app.py
-│       └── kpi_definitions.md
-└── tests/
-```
-
-## Jak uruchomić
-
-### Instalacja
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e .
-```
-
-### Uruchomienie całego pipeline'u
-
-```bash
-python -m retail_portfolio.pipelines.run_all
-```
-
-### Uruchomienie aplikacji
-
-```bash
-streamlit run src/retail_portfolio/llm/app.py
-```
-
-## Tabele końcowe
-
-### Bronze
-- `bronze_customers`
-- `bronze_products`
-- `bronze_campaigns`
-- `bronze_orders`
-- `bronze_order_items`
-
-### Silver
-- `silver_customers`
-- `silver_products`
-- `silver_orders`
-- `silver_order_items`
-
-### Gold
-- `dim_customer`
-- `dim_product`
-- `dim_date`
-- `fact_sales`
-- `daily_sales_metrics`
-- `sales_forecast`
-
-## Artefakty portfolio
-
-Po uruchomieniu pipeline'u powstają:
-- baza `data/processed/retail_portfolio.duckdb`,
-- wykresy w katalogu `artifacts/`,
-- raport `artifacts/kpi_report.md`.
-
-
-## Rozszerzenia
-- dbt,
-- Airflow / Prefect,
-- Delta Lake / Parquet,
-- PySpark,
-- MLflow,
-- RAG nad dokumentacją i słownikiem danych,
-- ewaluacja odpowiedzi LLM,
-- dashboard w Power BI / Superset.
+raw CSV -> bronze -> silver -> gold -> ML forecast -> KPI report -> Streamlit analytics assistant
