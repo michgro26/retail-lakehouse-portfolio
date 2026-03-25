@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "retail-lakehouse-portfolio"
+version = "0.1.0"
+description = "Portfolio project: retail lakehouse, warehouse, ML, and LLM assistant"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas==2.3.0",
+  "numpy==2.2.6",
+  "duckdb>=1.5.0",
+  "scikit-learn==1.7.0",
+  "streamlit>=1.55.0",
+  "python-dotenv==1.1.1",
+  "plotly==6.1.2",
+  "matplotlib>=3.9.0",
+  "pytest>=9.0.0"
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
